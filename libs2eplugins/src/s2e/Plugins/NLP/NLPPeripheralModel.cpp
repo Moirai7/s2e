@@ -156,12 +156,13 @@ void NLPPeripheralModel::CountDown() {
     RegMap state_map = plgState->get_state_map();
     srand (time(NULL));
     getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<"\n";
-    if (rw_count > 1) {
+    if (rw_count >= 0) {
         timer += 1;
+        getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<" "<<allCounters.size()<<"\n";
         for (auto c: allCounters) {
+	    getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
             if (timer % c.freq == 0) {
 		if (c.a.type == "O") {
-		    getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
 			int tmp = c.value[std::rand() % c.value.size()];
 			set_reg_value(state_map, c.a, tmp);
 			//set_reg_value(state_map, c.a, c.value);
@@ -247,7 +248,7 @@ bool NLPPeripheralModel::readNLPModelfromFile(S2EExecutionState *state, std::str
             return false;
         }
     }
-
+    getDebugStream() << "Countersize: "<<allCounters.size()<<"\n";
     return true;
 }
 
