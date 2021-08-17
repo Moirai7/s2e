@@ -579,7 +579,7 @@ void NLPPeripheralModel::onPeripheralWrite(S2EExecutionState *state, SymbolicHar
     }
     if (std::find(data_register.begin(), data_register.end(), phaddr) != data_register.end()) {
         plgState->write_dr_value(phaddr, writeconcretevalue, 32);
-        getDebugStream() << "Write to data register "<<data_register<<" "<<hexval(phaddr)<<" value: "<<writeconcretevalue<<" \n";
+        getDebugStream() << "Write to data register "<<hexval(phaddr)<<" "<<hexval(phaddr)<<" value: "<<writeconcretevalue<<" \n";
     } else {
         plgState->write_ph_value(phaddr, writeconcretevalue);
 	    getDebugStream() << "Write to phaddr "<<hexval(phaddr)<<" value: "<<writeconcretevalue<<" \n";
