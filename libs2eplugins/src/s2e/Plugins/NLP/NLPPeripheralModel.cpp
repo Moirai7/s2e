@@ -161,25 +161,25 @@ void NLPPeripheralModel::CountDown() {
         for (auto c: allCounters) {
             if (timer % c.freq == 0) {
 		if (c.a.type == "O") {
-		        getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
+		    getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
 			int tmp = c.value[std::rand() % c.value.size()];
 			set_reg_value(state_map, c.a, tmp);
 			//set_reg_value(state_map, c.a, c.value);
-                     getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" value "<<tmp <<" size "<<c.value.size()<<" "<<std::rand()<< "\n";
-                     //getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" value "<<c.value << "\n";
-	        } else {
-			/*
-                    uint32_t cur_value = get_reg_value(state_map, c.a);
-                    if (c.value > 0)
+            getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" value "<<tmp <<" size "<<c.value.size()<<" "<<std::rand()<< "\n";
+            //getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" value "<<c.value << "\n";
+        } else {
+        /*
+                uint32_t cur_value = get_reg_value(state_map, c.a);
+                if (c.value > 0)
+                    set_reg_value(state_map, c.a, cur_value + c.value);
+                else {
+                    if (cur_value <= -c.value) {
+                        set_reg_value(state_map, c.a, 0);
+                    } else
                         set_reg_value(state_map, c.a, cur_value + c.value);
-                    else {
-                        if (cur_value <= -c.value) {
-                            set_reg_value(state_map, c.a, 0);
-                        } else
-                            set_reg_value(state_map, c.a, cur_value + c.value);
-                     }
-                     getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" cur value " << hexval(cur_value) << " freq "<<c.freq<<" value "<<hexval(c.value)<<" new value "<< hexval(cur_value+c.value) << "\n";
-		     */
+                    }
+                    getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" cur value " << hexval(cur_value) << " freq "<<c.freq<<" value "<<hexval(c.value)<<" new value "<< hexval(cur_value+c.value) << "\n";
+            */
 		}
 
         plgState->insert_reg_map(c.a.phaddr, state_map[c.a.phaddr]);
