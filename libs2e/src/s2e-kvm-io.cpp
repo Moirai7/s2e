@@ -160,6 +160,8 @@ void s2e_kvm_mmio_write(target_phys_addr_t addr, uint64_t data, unsigned size) {
     unsigned print_addr = 0;
 #if defined(TARGET_ARM)
     print_addr = 0;
+    if (addr >= 0xe0000000)
+        print_addr = 1;
 #endif
 #ifdef SE_KVM_DEBUG_APIC
     if (addr >= 0xf0000000)

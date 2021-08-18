@@ -142,7 +142,7 @@ void NLPPeripheralModel::onExceptionExit(S2EExecutionState *state, uint32_t irq_
 	DECLARE_PLUGINSTATE(NLPPeripheralModelState, state);
 	//interrupt vector+16
 	//plgState->set_exit_interrupt(irq_no, -1);
-	plgState->set_exit_interrupt(irq_no, false);
+	plgState->set_exit_interrupt(irq_no - 16, false);
         getDebugStream() << "EXIT Interrupt IRQ" << irq_no << " exit_inter = "<< plgState->get_exit_interrupt(irq_no)<< "\n";
 }
 
