@@ -155,8 +155,7 @@ void NLPPeripheralModel::CountDown() {
     DECLARE_PLUGINSTATE(NLPPeripheralModelState, g_s2e_state);
     RegMap state_map = plgState->get_state_map();
     srand (time(NULL));
-    getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<"\n";
-    if (rw_count >= 0) {
+    if (rw_count > 1) {
         timer += 1;
         getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<" "<<allCounters.size()<<"\n";
         for (auto c: allCounters) {
