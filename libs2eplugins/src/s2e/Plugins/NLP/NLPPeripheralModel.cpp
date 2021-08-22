@@ -148,7 +148,8 @@ void NLPPeripheralModel::onExceptionExit(S2EExecutionState *state, uint32_t irq_
 
 void NLPPeripheralModel::onInvalidStatesDetection(S2EExecutionState *state, uint32_t pc, InvalidStatesType type,
                                                        uint64_t tb_num) {
-    CountDown();
+	timer += 1;
+    	CountDown();
 }
 
 void NLPPeripheralModel::CountDown() {
@@ -156,7 +157,6 @@ void NLPPeripheralModel::CountDown() {
     RegMap state_map = plgState->get_state_map();
     srand (time(NULL));
     if (rw_count > 1) {
-        timer += 1;
         getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<" "<<allCounters.size()<<"\n";
         for (auto c: allCounters) {
 	    getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
