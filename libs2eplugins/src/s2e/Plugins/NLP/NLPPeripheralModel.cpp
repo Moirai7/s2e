@@ -148,7 +148,6 @@ void NLPPeripheralModel::onExceptionExit(S2EExecutionState *state, uint32_t irq_
 
 void NLPPeripheralModel::onInvalidStatesDetection(S2EExecutionState *state, uint32_t pc, InvalidStatesType type,
                                                        uint64_t tb_num) {
-	timer += 1;
     	CountDown();
 }
 
@@ -157,6 +156,7 @@ void NLPPeripheralModel::CountDown() {
     RegMap state_map = plgState->get_state_map();
     srand (time(NULL));
     if (rw_count > 1) {
+	    timer += 1;
         getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<" "<<allCounters.size()<<"\n";
         for (auto c: allCounters) {
 	    getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
@@ -365,9 +365,9 @@ bool NLPPeripheralModel::extractEqu(std::string peripheralcache, EquList &vec, b
                 equ.a2.type = v[4];
                 equ.a2.phaddr = std::stoull(v[5].c_str(), NULL, 16);
                 if (v[5] == "*")
-                    equ.a1.bits = {-1};
+                    equ.a2.bits = {-1};
                 else {
-                    SplitStringToInt(v[5], equ.a1.bits, "/",10);
+                    SplitStringToInt(v[5], equ.a2.bits, "/",10);
                 }
             } else if (v[4][0] != '*') {
                 equ.type_a2 = "V";
@@ -514,6 +514,7 @@ void NLPPeripheralModel::UpdateGraph(S2EExecutionState *state, RWType type, uint
             } else if (equ.type_a2 == "R") {
                 a2 = state_map[equ.a2.phaddr].cur_value;
             } else if (equ.type_a2 == "F"){
+            getDebugStream() << "action a2 "<<hexval(equ.a2.phaddr)<<" bit: "<<equ.a2.bits[0]<<" \n";
                 a2 = get_reg_value(state_map, equ.a2);
             } else {
                 a2 = equ.value;
