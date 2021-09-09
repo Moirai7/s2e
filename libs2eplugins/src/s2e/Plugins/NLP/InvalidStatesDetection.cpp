@@ -594,10 +594,11 @@ void InvalidStatesDetection::onInvalidLoopDetection(S2EExecutionState *state, ui
                 plgState->inserttbregs(conregs); // insert current tb before assign loop tb
                 plgState->assignloopregs(i);     // assign loop tb
                 plgState->setloopflag(true);     // next round compare loop tb first
+                getDebugStream(state) << "May be mulit-tb loop!\n";
                 return;
             }
         } else {
-            if (j > 1 && plgState->getnewtbnum() > 200) {
+            if (j > 1 && plgState->getnewtbnum() > 100) {
                 last_re_reg_map = std::make_tuple(pc, j - 2, conregs[j]);
             }
         }
@@ -607,7 +608,7 @@ void InvalidStatesDetection::onInvalidLoopDetection(S2EExecutionState *state, ui
     if (std::get<0>(last_re_reg_map) == pc) {
         UniquePcRegMap uniquepcregmap = std::make_pair(pc, std::get<1>(last_re_reg_map));
         getDebugStream(state) << " pc = " << hexval(std::get<0>(last_re_reg_map)) << " long reg "
-                              << hexval(std::get<1>(last_re_reg_map)) << " is " << hexval(std::get<2>(last_re_reg_map))
+                              << hexval(std::get<1>(last_re_reg_map)) << " is " << std::get<2>(last_re_reg_map)
                               << " different \n";
         if (plgState->judgelongloopregs(uniquepcregmap, std::get<2>(last_re_reg_map))) {
             // max_loop_tb_num++;
