@@ -156,7 +156,8 @@ void NLPPeripheralModel::CountDown() {
     RegMap state_map = plgState->get_state_map();
     srand (time(NULL));
     if (rw_count > 1) {
-	    timer += 1;
+        timer += 1;
+	/*
         getDebugStream()<<"start CountDown"<<rw_count<<" "<<timer<<" "<<allCounters.size()<<"\n";
         for (auto c: allCounters) {
 	    getDebugStream()<<"old Counter"<<state_map[c.a.phaddr].cur_value<<" bits "<<c.a.bits[0]<<"\n";
@@ -168,18 +169,6 @@ void NLPPeripheralModel::CountDown() {
             getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" value "<<tmp <<" size "<<c.value.size()<<" "<<std::rand()<< "\n";
             //getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" value "<<c.value << "\n";
         } else {
-        /*
-                uint32_t cur_value = get_reg_value(state_map, c.a);
-                if (c.value > 0)
-                    set_reg_value(state_map, c.a, cur_value + c.value);
-                else {
-                    if (cur_value <= -c.value) {
-                        set_reg_value(state_map, c.a, 0);
-                    } else
-                        set_reg_value(state_map, c.a, cur_value + c.value);
-                    }
-                    getDebugStream() << "Counter "<< hexval(c.a.phaddr)<<" cur value " << hexval(cur_value) << " freq "<<c.freq<<" value "<<hexval(c.value)<<" new value "<< hexval(cur_value+c.value) << "\n";
-            */
 		}
 
         plgState->insert_reg_map(c.a.phaddr, state_map[c.a.phaddr]);
@@ -188,13 +177,14 @@ void NLPPeripheralModel::CountDown() {
             }
         }
         UpdateGraph(g_s2e_state, Write, 0);
-        //if (timer == 3) {
-            //getDebugStream() << " write init dr value 1111!\n";
+	*/
+        if (timer == 3) {
+            getDebugStream() << " write init dr value 1111!\n";
             //Write a value to DR
-            //for (auto phaddr: data_register)
-            //    plgState->hardware_write_to_receive_buffer(phaddr, 0xA, 32);
-            //UpdateGraph(g_s2e_state, Write, 0);
-        //}
+            for (auto phaddr: data_register)
+                plgState->hardware_write_to_receive_buffer(phaddr, 0xA, 32);
+            UpdateGraph(g_s2e_state, Write, 0);
+        }
     }
 }
 
@@ -449,12 +439,12 @@ void NLPPeripheralModel::UpdateGraph(S2EExecutionState *state, RWType type, uint
             rel = equ.rel;
             if (equ.a1.type == "*") {
                 trigger_res.push_back(true);
-            } else if (equ.a1.type == "R") {
+            } else if (equ.type_a2 == "*" && equ.a1.type == "R") {
                 if (type == Read && std::find(data_register.begin(), data_register.end(), phaddr) != data_register.end())
                     trigger_res.push_back(true);
                 else
                     trigger_res.push_back(false);
-            } else if (equ.a1.type == "T") {
+            } else if (equ.type_a2 == "*" &&equ.a1.type == "T") {
                 if (type == Write && std::find(data_register.begin(), data_register.end(), phaddr) != data_register.end())
                     trigger_res.push_back(true);
                 else
@@ -481,8 +471,10 @@ void NLPPeripheralModel::UpdateGraph(S2EExecutionState *state, RWType type, uint
                     } else
                         trigger_res.push_back(false);
 
-                } else
+                } else {
+			getDebugStream() << "intermediate trigger a1 "<<hexval(equ.a1.phaddr)<<" bit: "<<equ.a1.bits[0]<<" a1 "<<a1<<" eq "<<equ.eq<<" a2 "<<equ.value<<" \n";
                         trigger_res.push_back(compare(a1, equ.eq, a2));
+		}
             }
         }
         bool check = rel;
@@ -561,11 +553,11 @@ void NLPPeripheralModel::onPeripheralRead(S2EExecutionState *state, SymbolicHard
     UpdateGraph(state, Read, phaddr);
     if (std::find(data_register.begin(), data_register.end(), phaddr) != data_register.end()) {
         *NLPsymbolicvalue = plgState->get_dr_value(phaddr, size);
-        //uint32_t return_value = 0;
-        //onBufferInput.emit(state, phaddr, size, &return_value);
+        uint32_t return_value = 0;
+        onBufferInput.emit(state, phaddr, size, &return_value);
         //getDebugStream() << "Read data register "<<data_register<<" width "<<size<<" value "<<*NLPsymbolicvalue<<" "<<plgState->get_dr_value(phaddr, size)<<" return value: "<<return_value<<" \n";
-        //plgState->hardware_write_to_receive_buffer(data_register, return_value, size);
-        //UpdateGraph(state, Read, phaddr);
+        plgState->hardware_write_to_receive_buffer(data_register, return_value, size);
+        UpdateGraph(state, Read, phaddr);
     } else {
         *NLPsymbolicvalue = plgState->get_ph_value(phaddr);
     }
