@@ -236,9 +236,10 @@ bool NLPPeripheralModel::readNLPModelfromFile(S2EExecutionState *state, std::str
         EquList action;
         if (getTApairs(peripheralcache, trigger, action)) {
             allTAs.push_back(std::make_pair(trigger, action));
-            if (start == 0xFFFFFFFF) start = action[0].a1.phaddr;
-	    start = std::min(start, action[0].a1.phaddr);
-            end = std::max(end, action[0].a1.phaddr);
+            for (auto equ: trigger) {
+                start = std::min(start, equ.a1.phaddr);
+                end = std::max(end, equ.a1.phaddr);
+            }
         } else {
             return false;
         }
