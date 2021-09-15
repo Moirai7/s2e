@@ -220,28 +220,32 @@ bool NLPPeripheralModel::readNLPModelfromFile(S2EExecutionState *state, std::str
         }
     }
 
-    uint32_t start = 0, end = 0;
+    uint32_t start = 0xFFFFFFFF, end = 0;
     TAMap allTAs;
     while (getline(fNLP, peripheralcache)) {
         if (peripheralcache == "==") break;
         if (peripheralcache == "--") {
             TA_range[std::make_pair(start, end)] = allTAs;
             allTAs.clear();
-            start = 0;
+            start = 0xFFFFFFFF;
             end = 0;
+	    continue;
         }
 
         EquList trigger;
         EquList action;
         if (getTApairs(peripheralcache, trigger, action)) {
             allTAs.push_back(std::make_pair(trigger, action));
-            if (start == 0) start = reg.phaddr;
-            end = reg.phaddr;
+            if (start == 0xFFFFFFFF) start = action[0].a1.phaddr;
+	    start = std::min(start, action[0].a1.phaddr);
+            end = std::max(end, action[0].a1.phaddr);
         } else {
             return false;
         }
     }
-
+    //getDebugStream() << "TArange:"<<hexval(TA_range.begin()->first.first);
+    //getDebugStream()<<" "<<hexval(TA_range.begin()->second[0].second[0].a1.phaddr);
+    //getDebugStream()<<" "<<hexval(std::next(TA_range.begin(),1)->first.first)<<" "<<hexval(std::next(TA_range.begin(),1)->second[0].second[0].a1.phaddr)<<"\n";
     while (getline(fNLP, peripheralcache)) {
         Counter count;
         if (extractCounter(peripheralcache, count)) {
@@ -450,7 +454,7 @@ void NLPPeripheralModel::UpdateGraph(S2EExecutionState *state, RWType type, uint
     for (auto loc: TA_range) {
         auto range = loc.first;
         auto TA = loc.second;
-        if (phaddr >= range[0] && phaddr <= range[1]) {
+        if (phaddr >= range.first && phaddr <= range.second) {
             allTAs = TA;
             break;
         }
