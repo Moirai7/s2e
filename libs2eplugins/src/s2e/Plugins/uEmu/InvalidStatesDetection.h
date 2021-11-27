@@ -58,6 +58,9 @@ private:
     bool init_cache_mode;
     bool alive_point_flag;
     bool kill_point_flag;
+    std::string firmwareName;
+    bool start_flag;
+    uint32_t start_flag1, start_flag2, end_flag1, terminate_flag;
 
     void onTranslateBlockStart(ExecutionSignal *signal, S2EExecutionState *state, TranslationBlock *tb, uint64_t pc);
 
@@ -75,6 +78,9 @@ private:
     void onInvalidStatesKill(S2EExecutionState *state, uint64_t pc, InvalidStatesType type, std::string reason_str);
 
     bool onModeSwitchandTermination(S2EExecutionState *state, uint64_t pc);
+
+    void recordTBTrace(S2EExecutionState *state);
+    void recordTBTraceIRQ(S2EExecutionState *state);
 };
 
 } // namespace plugins
