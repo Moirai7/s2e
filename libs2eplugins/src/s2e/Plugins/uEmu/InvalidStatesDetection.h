@@ -60,7 +60,7 @@ private:
     bool kill_point_flag;
     std::string firmwareName;
     bool start_flag;
-    uint32_t start_flag1, start_flag2, end_flag1, terminate_flag;
+    //uint32_t start_flag1, start_flag2, end_flag1, terminate_flag;
 
     void onTranslateBlockStart(ExecutionSignal *signal, S2EExecutionState *state, TranslationBlock *tb, uint64_t pc);
 

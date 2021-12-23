@@ -468,8 +468,8 @@ bool InvalidStatesDetection::onModeSwitchandTermination(S2EExecutionState *state
     if (plgState->getnewtbnum() > 200 && plgState->getretbnum() > terminate_tb_num &&
         (state->regs()->getInterruptFlag() == 0)) {
         bool actual_end = false;
-        recordTBTraceIRQ(state);
-        recordTBTrace(state);
+        //recordTBTraceIRQ(state);
+        //recordTBTrace(state);
         getWarningsStream() << "===========unit test pass============\n";
         if (terminate_tb_num > initial_terminate_tb_num) {
             actual_end = true;
@@ -522,18 +522,18 @@ void InvalidStatesDetection::recordTBTraceIRQ(S2EExecutionState *state) {
 
 void InvalidStatesDetection::onKillandAlivePoints(S2EExecutionState *state, uint64_t pc) {
     DECLARE_PLUGINSTATE(InvalidStatesDetectionState, state);
-    if (state->regs()->getInterruptFlag() && state->regs()->getExceptionIndex() > 15) {
-        plgState->insert_traceirq_pc(pc);
-    } else if (!state->regs()->getInterruptFlag()) {
-        if (pc == start_flag1 || pc == start_flag2 || start_flag) {
-            if (pc != start_flag2 && pc != start_flag1)
-                plgState->insert_trace_pc(pc);
-            start_flag = true;
-        }
-        if (pc == end_flag1 || pc == terminate_flag) {
-            start_flag = false;
-        }
-    }
+    /*if (state->regs()->getInterruptFlag() && state->regs()->getExceptionIndex() > 15) {*/
+        //plgState->insert_traceirq_pc(pc);
+    //} else if (!state->regs()->getInterruptFlag()) {
+        //if (pc == start_flag1 || pc == start_flag2 || start_flag) {
+            //if (pc != start_flag2 && pc != start_flag1)
+                //plgState->insert_trace_pc(pc);
+            //start_flag = true;
+        //}
+        //if (pc == end_flag1 || pc == terminate_flag) {
+            //start_flag = false;
+        //}
+    /*}*/
 
 
     /*if (pc == terminate_flag && plgState->getretbnum() > 1800) {*/
