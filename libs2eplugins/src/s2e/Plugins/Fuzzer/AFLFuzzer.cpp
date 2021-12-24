@@ -349,6 +349,11 @@ void AFLFuzzer::onFuzzingInput(S2EExecutionState *state, PeripheralRegisterType 
             cur_read = 0;
             memcpy(afl_area_ptr, bitmap, MAP_SIZE);
             afl_con->AFL_input = 0;
+
+            uint8_t content = 0;
+            for (int i = 0; i < 256; i++) {
+                state->mem()->write(0x200000A0 + i, &content, sizeof(content));
+            }
             fork_count++;
             if (fork_count > max_fork_count) {
                 fork_count = 0;
