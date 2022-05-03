@@ -1099,8 +1099,8 @@ klee::ref<klee::Expr> SymbolicPeripherals::onNLPLearningMode(S2EExecutionState *
     getWarningsStream(g_s2e_state) << ss.str() << " size " << hexval(size) << "dr flag = " << dr_flag
                                 << " SYM NLP value = " << hexval(NLP_value) << "\n";
 
-    //if (dr_flag || (address >= 0x40023800 && address <= 0x4002388C) || (address >= 0x40005400 && address <= 0x40005424) || (address >= 0x40064000 && address <=0x4006400D) || (address >= 0x40021000 && address <= 0x4002102C)) {
-    if (dr_flag) {
+    if (dr_flag || (address >= 0x40023800 && address <= 0x4002388C) || (address >= 0x40005400 && address <= 0x40005424) || (address >= 0x40064000 && address <=0x4006400D) || (address >= 0x40021000 && address <= 0x4002102C)) {
+    //if (dr_flag) {
         uint64_t LSB = ((uint64_t) 1 << (size * 8));
         getInfoStream() << "return concrete value phaddr = " << hexval(address) << "\n";
         uint32_t value = NLP_value & (LSB - 1);
@@ -2296,7 +2296,7 @@ void SymbolicPeripherals::onInvalidStatesDetection(S2EExecutionState *state, uin
     // remove states in same loop
     if ((!no_new_branch_flag && !state->regs()->getInterruptFlag()) ||
         (!irq_no_new_branch_flag && state->regs()->getInterruptFlag())) {
-        if (unsearched_condition_fork_states.back().size() > 1) {
+        if (unsearched_condition_fork_states.size() > 1 && unsearched_condition_fork_states.back().size() > 1) {
             for (int i = 1; i < unsearched_condition_fork_states.back().size();
                  ++i) { // last it is current state so not add current state
                 false_type_phs_fork_states.push_back(unsearched_condition_fork_states.back()[i]);
@@ -2315,8 +2315,9 @@ void SymbolicPeripherals::onInvalidStatesDetection(S2EExecutionState *state, uin
 
     if ((no_new_branch_flag && (!state->regs()->getInterruptFlag())) ||
         (irq_no_new_branch_flag && state->regs()->getInterruptFlag())) {
-        unsearched_condition_fork_states.pop_back();
-        if (unsearched_condition_fork_states.back().size() > 1) {
+        if (!unsearched_condition_fork_states.empty()) 
+        	unsearched_condition_fork_states.pop_back();
+        if (!unsearched_condition_fork_states.empty() && unsearched_condition_fork_states.back().size() > 1) {
             for (int i = 1; i < unsearched_condition_fork_states.back().size();
                  ++i) { // last it is current state so not add current state
                 false_type_phs_fork_states.push_back(unsearched_condition_fork_states.back()[i]);
