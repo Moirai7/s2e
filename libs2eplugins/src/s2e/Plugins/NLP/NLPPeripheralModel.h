@@ -34,6 +34,7 @@ typedef struct field {
 } Field;
 
 typedef struct equation {
+    std::string trigger_type; //
     uint32_t id;
     Field a1;
     std::string eq;      //= ; >;  <;  >=; <=
@@ -53,7 +54,7 @@ typedef struct peripheralReg {
     uint32_t t_size;
     uint32_t r_size;
     uint32_t t_value;
-    //int front_left;
+    // int front_left;
     std::queue<uint8_t> r_value;
 } PeripheralReg;
 
@@ -67,7 +68,7 @@ typedef struct flag {
 
 typedef struct dma {
     uint32_t dma_irq;
-    uint32_t state; //0: disable; 1: not start yet; 2:half complete
+    uint32_t state; // 0: disable; 1: not start yet; 2:half complete
     Field memory_addr;
     Field peri_dr;
     Field HTIF;
@@ -150,6 +151,7 @@ private:
 
     bool parseConfig();
     void initialize();
+    std::pair<std::string, uint32_t> getAddress(std::string addr);
     void write_to_descriptor(S2EExecutionState *state, std::queue<uint8_t> buffer_input);
     void CheckEnable(S2EExecutionState *state, std::vector<uint32_t> &irq_no);
     bool ExistInMMIO(uint32_t tmp);
@@ -193,3 +195,4 @@ private:
 } // namespace s2e
 
 #endif // S2E_PLUGINS_NLPPeripheralModel_H
+
