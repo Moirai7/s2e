@@ -75,6 +75,7 @@ bool MultiSearcher::selectSearcher(const std::string &name) {
 
 klee::ExecutionState &MultiSearcher::selectState() {
     assert(m_currentSearcher);
+    getDebugStream() << "MulitSearcher SelectState\n";
     return m_currentSearcher->selectState();
 }
 

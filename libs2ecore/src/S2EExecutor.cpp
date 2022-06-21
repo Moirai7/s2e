@@ -815,6 +815,23 @@ void S2EExecutor::stateSwitchTimerCallback(void *opaque) {
     libcpu_mod_timer(c->m_stateSwitchTimer, libcpu_get_clock_ms(host_clock) + 100);
 }
 
+void S2EExecutor::stateSwitchCallback() {
+    //assert(env->current_tb == nullptr);
+
+    if (g_s2e_state) {
+        doLoadBalancing();
+        S2EExecutionState *nextState = selectNextState(g_s2e_state);
+        if (nextState) {
+            g_s2e_state = nextState;
+            updateStates(g_s2e_state);
+        } else {
+            // Do not reschedule the timer anymore
+            return;
+        }
+    }
+
+}
+
 void S2EExecutor::initializeStateSwitchTimer() {
     m_stateSwitchTimer = libcpu_new_timer_ms(host_clock, &stateSwitchTimerCallback, this);
     libcpu_mod_timer(m_stateSwitchTimer, libcpu_get_clock_ms(host_clock) + 100);
@@ -1072,6 +1089,8 @@ void S2EExecutor::prepareFunctionExecution(S2EExecutionState *state, llvm::Funct
     /* Emulate call to a TB function */
     state->prevPC = state->pc;
 
+    m_s2e->getWarningsStream(state)
+        << "push stack fram state = " << state->getID() << '\n';
     state->pushFrame(state->pc, kf);
     state->pc = kf->getInstructions();
 
@@ -1141,6 +1160,8 @@ bool S2EExecutor::finalizeTranslationBlockExec(S2EExecutionState *state) {
         }
     }
 
+    m_s2e->getDebugStream(g_s2e_state) << " 4 symbolic execute state ID" << g_s2e_state->getID() << " state size = " << g_s2e_state->stack.size()
+                             << "\n";
     /**
      * TBs can fork anywhere and the remainder can also throw exceptions.
      * Should exit the CPU loop in this case.
@@ -1151,6 +1172,8 @@ bool S2EExecutor::finalizeTranslationBlockExec(S2EExecutionState *state) {
         m_s2e->getDebugStream(state) << "Done finalizing TB execution, new pc=" << hexval(state->regs()->getPc())
                                      << "\n";
     }
+            m_s2e->getDebugStream(g_s2e_state) << " 5 symbolic execute state ID" << g_s2e_state->getID() << " state size = " << g_s2e_state->stack.size()
+                                 << "\n";
 
     /**
      * Memory topology may change on state switches.
@@ -1200,6 +1223,8 @@ void S2EExecutor::updateConcreteFastPath(S2EExecutionState *state) {
 }
 
 uintptr_t S2EExecutor::executeTranslationBlockKlee(S2EExecutionState *state, TranslationBlock *tb) {
+    m_s2e->getDebugStream(state) << " symbolic execute state ID" << state->getID() << " state size = " << state->stack.size()
+                                 << "\n";
     assert(state->m_active && !state->isRunningConcrete());
     assert(state->stack.size() == 1);
     assert(state->pc == m_dummyMain->getInstructions());
@@ -1279,6 +1304,8 @@ uintptr_t S2EExecutor::executeTranslationBlock(S2EExecutionState *state, Transla
     // Avoid incrementing stats every time, very expensive.
     static unsigned doStatsIncrementCount = 0;
     assert(state->isActive());
+    m_s2e->getDebugStream(state) << " 0 symbolic execute state ID" << state->getID() << " state size = " << state->stack.size()
+                                 << "\n";
 
     updateConcreteFastPath(state);
 
@@ -1324,6 +1351,8 @@ uintptr_t S2EExecutor::executeTranslationBlock(S2EExecutionState *state, Transla
     }
 
     if (executeKlee) {
+        m_s2e->getDebugStream(state) << " 2 symbolic execute state ID" << state->getID() << " state size = " << state->stack.size()
+                                     << "\n";
         if (state->isRunningConcrete()) {
             if (EnableTimingLog) {
                 TimerStatIncrementer t(stats::concreteModeTime);
@@ -1349,6 +1378,8 @@ uintptr_t S2EExecutor::executeTranslationBlock(S2EExecutionState *state, Transla
             }
         }
 
+        m_s2e->getDebugStream(state) << " 1 symbolic execute state ID" << state->getID() << " state size = " << state->stack.size()
+                                     << "\n";
         return executeTranslationBlockConcrete(state, tb);
     }
 }
@@ -1356,6 +1387,7 @@ uintptr_t S2EExecutor::executeTranslationBlock(S2EExecutionState *state, Transla
 void S2EExecutor::cleanupTranslationBlock(S2EExecutionState *state) {
     assert(state->m_active);
 
+    g_s2e->getDebugStream(state) << "clearn up state id =" << state->getID() <<"\n";
     if (state->m_forkAborted) {
         return;
     }
